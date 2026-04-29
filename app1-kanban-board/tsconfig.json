@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    /* strict mode（これが全ての型安全の起点）*/
+    "strict": true,
+    "noUncheckedIndexedAccess": true, // 配列やオブジェクトへのアクセス時に undefined の可能性を強制的に考慮させる、より厳格なオプション
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* 不要なコードを検出 */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+
+    /* その他 */
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
