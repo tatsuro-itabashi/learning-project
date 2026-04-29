@@ -146,3 +146,12 @@ export type CreateBoardInput = Pick<Board, 'title'>
 // }
 
 // console.log(validCard, createInput)
+
+
+
+// 優先度ごとの表示設定
+export const PRIORITY_CONFIG = {
+    high:   { label: '高',  color: 'bg-red-100 text-red-700' },
+    medium: { label: '中',  color: 'bg-yellow-100 text-yellow-700' },
+    low:    { label: '低',  color: 'bg-gray-100 text-gray-600' },
+} as const satisfies Record<Priority, { label: string; color: string }>
