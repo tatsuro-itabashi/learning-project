@@ -155,3 +155,16 @@ export const PRIORITY_CONFIG = {
     medium: { label: '中',  color: 'bg-yellow-100 text-yellow-700' },
     low:    { label: '低',  color: 'bg-gray-100 text-gray-600' },
 } as const satisfies Record<Priority, { label: string; color: string }>
+
+
+
+// カードフォームの入力値の型
+export interface CardFormValues {
+    title: string
+    description: string
+    priority: Priority
+    labels: LabelKey[]
+    dueDate: string | null // input[type="date"] は string で扱う
+}
+
+export type CardFormErrors = Partial<Record<keyof CardFormValues, string>>
