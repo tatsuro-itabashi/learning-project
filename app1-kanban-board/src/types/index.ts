@@ -168,3 +168,19 @@ export interface CardFormValues {
 }
 
 export type CardFormErrors = Partial<Record<keyof CardFormValues, string>>
+
+
+
+// ドラッグアイテムの識別データ
+// dnd-kit の data に乗せるカスタムデータ
+export interface DraggableCardData {
+    type: 'card'
+    cardId: string
+    columnId: string
+}
+
+// ドロップ先カラムの識別データ
+export interface DroppableColumnData {
+    type: 'column'
+    columnId: string
+}
