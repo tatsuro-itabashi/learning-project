@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
     DndContext,
     DragOverlay,
@@ -11,7 +11,10 @@ import {
 } from '@dnd-kit/core'
 import type { Card, DraggableCardData, DroppableColumnData } from '@/types'
 import { useBoardStore } from '@/store/boardStore'
+import { useCardFilter } from '@/hooks/useCardFilter'
+import { applyFilter } from '@/utils/cardFilter'
 import { Column } from '@/components/Column/Column'
+import { BoardFilter } from '@/components/Board/BoardFilter'
 import { CardItem } from '@/components/Card/CardItem'
 import { CardModal } from '@/components/Card/CardModal'
 import { useCardModal } from '@/hooks/useCardModal'
@@ -38,6 +41,7 @@ function isDroppableColumnData(data: unknown): data is DroppableColumnData {
 export function Board() {
     const { board, moveCard } = useBoardStore()
     const { modalState, openCreate, openEdit, close } = useCardModal()
+    const { filter, toggleLabel, togglePriority, setSortKey, resetFilter, isFiltering } = useCardFilter()
 
     // ドラッグ中のカード（DragOverlay 表示用）
     const [activeCard, setActiveCard] = useState<Card | null>(null)
@@ -49,11 +53,30 @@ export function Board() {
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
     )
 
-    const getCardsForColumn = (cardIds: string[]): Card[] =>
-        cardIds.flatMap((id) => {
+    // フィルタ済みカードを useMemo でキャッシュ
+    // filter か board.cards が変わったときだけ再計算される
+    const filteredCardMap = useMemo(() => {
+        const allCards = Object.values(board.cards)
+        const filtered = applyFilter(allCards, filter)
+        return new Set(filtered.map((c) => c.id))
+    }, [board.cards, filter])
+    const totalCount = Object.keys(board.cards).length
+    const filteredCount = filteredCardMap.size
+
+    // カラムのカード一覧（フィルタ適用・ソート順維持）
+    const getCardsForColumn = (cardIds: string[]): Card[] => {
+        const allCards = cardIds.flatMap((id) => {
             const card = board.cards[id]
             return card ? [card] : []
         })
+        // ソートキーがある場合はフィルタ済みカードをソート順で返す
+        if (filter.sortKey !== 'none') {
+            const filtered = applyFilter(allCards, filter)
+            return filtered
+        }
+        // ソートなしの場合は DnD の順序を維持しつつフィルタだけ適用
+        return allCards.filter((c) => filteredCardMap.has(c.id))
+    }
 
     // ドラッグ開始：アクティブカードを記録
     const handleDragStart = (event: DragStartEvent) => {
@@ -120,19 +143,34 @@ export function Board() {
             onDragEnd={handleDragEnd}
         >
         <div className="flex flex-col h-screen bg-blue-600">
-            <header className="px-6 py-4">
-            <h1 className="text-white text-xl font-bold">{board.title}</h1>
+            <header className="px-6 pt-4 pb-2">
+            <div className="flex items-center justify-between mb-3">
+                <h1 className="text-white text-xl font-bold">{board.title}</h1>
+                {isFiltering && (
+                <span className="text-white/80 text-sm">
+                    {filteredCount} / {totalCount} 件
+                </span>
+                )}
+            </div>
+            <BoardFilter
+                filter={filter}
+                onToggleLabel={toggleLabel}
+                onTogglePriority={togglePriority}
+                onSetSortKey={setSortKey}
+                onReset={resetFilter}
+                isFiltering={isFiltering}
+            />
             </header>
 
             <main className="flex gap-4 px-6 pb-6 overflow-x-auto flex-1">
                 {board.columns.map((column) => (
                     <Column
-                    key={column.id}
-                    column={column}
-                    cards={getCardsForColumn(column.cardIds)}
-                    onCardClick={openEdit}
-                    onAddCard={openCreate}
-                    isOver={overColumnId === column.id}
+                        key={column.id}
+                        column={column}
+                        cards={getCardsForColumn(column.cardIds)}
+                        onCardClick={openEdit}
+                        onAddCard={openCreate}
+                        isOver={overColumnId === column.id}
                     />
                 ))}
             </main>
@@ -143,9 +181,9 @@ export function Board() {
             {activeCard && (
             <div className="rotate-2 scale-105 opacity-90">
                 <CardItem
-                card={activeCard}
-                columnId=""
-                onClick={() => undefined}
+                    card={activeCard}
+                    columnId=""
+                    onClick={() => undefined}
                 />
             </div>
             )}

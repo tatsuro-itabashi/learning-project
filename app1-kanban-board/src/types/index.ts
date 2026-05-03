@@ -184,3 +184,26 @@ export interface DroppableColumnData {
     type: 'column'
     columnId: string
 }
+
+
+
+// ソートの基準
+export type SortKey = 'none' | 'priority' | 'dueDate'
+
+// ソートの方向
+export type SortOrder = 'asc' | 'desc'
+
+// フィルタの状態
+export interface FilterState {
+    labels: LabelKey[]       // 選択中のラベル（空 = 全表示）
+    priorities: Priority[]   // 選択中の優先度（空 = 全表示）
+    sortKey: SortKey
+    sortOrder: SortOrder
+}
+
+// 優先度を数値に変換するマップ（ソート用）
+export const PRIORITY_ORDER: Record<Priority, number> = {
+    high: 0,
+    medium: 1,
+    low: 2,
+} as const
