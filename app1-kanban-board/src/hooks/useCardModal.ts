@@ -24,6 +24,7 @@ export function useCardModal() {
 
     return {
         modalState,
+        isOpen: modalState.mode !== 'closed',
         openCreate,
         openEdit,
         close,

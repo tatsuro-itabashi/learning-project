@@ -11,7 +11,10 @@ export default tseslint.config(
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.vitest,
+      },
       parserOptions: {
         project: ['./tsconfig.json', './tsconfig.node.json'],
         tsconfigRootDir: import.meta.dirname,
@@ -27,6 +30,13 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',        // any を禁止
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/consistent-type-imports': 'warn', // import type を強制
+    },
+  },
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
 )

@@ -60,7 +60,7 @@ export function sortCards(cards: Card[], filter: FilterState): Card[] {
         return sortBy(cards, (card) => PRIORITY_ORDER[card.priority], filter.sortOrder)
     }
 
-    return sortBy(cards, (card) => card.dueDate ?? '', filter.sortOrder)
+    return sortBy(cards, (card) => card.dueDate, filter.sortOrder)
 }
 
 // フィルタとソートを合成して適用
