@@ -43,7 +43,9 @@ export function Modal({ isOpen, onClose, title, children}: ModalProps) {
             />
 
             {/* モーダル本体 */}
-            <div className="relative z-10 bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] flex flex-col">
+            <div className="relative z-10 bg-white w-full max-w-lg mx-auto max-h-[92vh] flex flex-col
+                rounded-t-2xl md:rounded-xl shadow-2xl
+                fixed bottom-0 md:static">
             {/* ヘッダー */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-800">{title}</h2>

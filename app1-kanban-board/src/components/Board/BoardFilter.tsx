@@ -19,7 +19,7 @@ export function BoardFilter({
     isFiltering,
 }: BoardFilterProps) {
     return (
-        <div className="flex flex-wrap items-center gap-4 px-6 pb-3">
+        <div className="flex flex-wrap items-center gap-3 px-4 md:px-6 pb-3">
 
         {/* ラベルフィルタ */}
         <div className="flex items-center gap-1.5">

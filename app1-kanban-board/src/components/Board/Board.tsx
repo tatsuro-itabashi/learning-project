@@ -143,7 +143,7 @@ export function Board() {
             onDragEnd={handleDragEnd}
         >
         <div className="flex flex-col h-screen bg-blue-600">
-            <header className="px-6 pt-4 pb-2">
+            <header className="px-6 md:px-6 pt-4 pb-2">
             <div className="flex items-center justify-between mb-3">
                 <h1 className="text-white text-xl font-bold">{board.title}</h1>
                 {isFiltering && (
@@ -162,7 +162,8 @@ export function Board() {
             />
             </header>
 
-            <main className="flex gap-4 px-6 pb-6 overflow-x-auto flex-1">
+            {/* 変更後：モバイルは縦スクロール・md以上は横スクロール */}
+            <main className="flex flex-col md:flex-row gap-4 px-4 md:px-6 pb-6 overflow-y-auto md:overflow-x-auto flex-1">
                 {board.columns.map((column) => (
                     <Column
                         key={column.id}

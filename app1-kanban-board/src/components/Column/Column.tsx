@@ -18,7 +18,7 @@ export function Column({ column, cards, onCardClick, onAddCard, isOver }: Column
 
     return (
         <div
-            className={`flex flex-col bg-gray-50 rounded-xl w-72 shrink-0 transition-colors duration-150 ${
+            className={`flex flex-col bg-gray-50 rounded-xl w-full md:w-72 md:shrink-0 transition-colors duration-150 ${
                 isOver ? 'bg-blue-50 ring-2 ring-blue-300' : ''
             }`}
         >
