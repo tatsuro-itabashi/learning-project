@@ -1,0 +1,15 @@
+import type { DefaultSession } from 'next-auth'
+
+// Declaration Merging で NextAuth の型を拡張
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id: string
+    } & DefaultSession['user']
+  }
+}
+
+// ポイント
+//（Declaration Merging）: declare module 'next-auth' の中で同名の interface Session を定義すると、
+// 既存の型定義にフィールドを追加できます。これが TypeScript の Declaration Merging です。
+// 既存の型を壊さずに拡張できるのが特徴で、ライブラリの型を補う場面でよく使われます。
