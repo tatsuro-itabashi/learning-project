@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { PostSummary } from '@/lib/post'
+import { TagBadge } from '@/components/ui/TagBadge'
 
 interface PostCardProps {
     post: PostSummary
@@ -23,14 +24,9 @@ export function PostCard({ post }: PostCardProps) {
             {/* タグ */}
             {post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-3">
-                {post.tags.map((tag) => (
-                    <span
-                    key={tag.name}
-                    className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full"
-                    >
-                    {tag.name}
-                    </span>
-                ))}
+                    {post.tags.map((tag) => (
+                        <TagBadge key={tag.name} name={tag.name} asLink={false} />
+                    ))}
                 </div>
             )}
 

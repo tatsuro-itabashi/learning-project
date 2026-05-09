@@ -4,6 +4,7 @@ import Image from 'next/image'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { getPostBySlug } from '@/lib/post'
+import { TagBadge } from '@/components/ui/TagBadge'
 
 interface PostPageProps {
     params: Promise<{ slug: string }>
@@ -45,12 +46,7 @@ const publishedDate = post.publishedAt
             {post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
                     {post.tags.map((tag) => (
-                    <span
-                        key={tag.name}
-                        className="px-3 py-1 bg-blue-50 text-blue-700 text-sm rounded-full"
-                    >
-                        {tag.name}
-                    </span>
+                    <TagBadge key={tag.name} name={tag.name} size="md" />
                     ))}
                 </div>
             )}
