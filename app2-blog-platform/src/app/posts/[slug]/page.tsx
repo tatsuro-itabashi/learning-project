@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import { Suspense } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { getPostBySlug } from '@/lib/post'
@@ -9,6 +10,7 @@ import { TagBadge } from '@/components/ui/TagBadge'
 // import に追加
 import { LikeButton } from '@/components/post/LikeButton'
 import { getLikeStatus } from '@/app/posts/_actions/likeActions'
+import { CommentList } from '@/components/post/CommentList'
 
 interface PostPageProps {
     params: Promise<{ slug: string }>
@@ -93,7 +95,24 @@ const publishedDate = post.publishedAt
                     initialLiked={liked}
                     initialCount={count}
                 />
+                <Suspense fallback={
+                    <div className="mt-10 pt-8 border-t border-gray-200">
+                        <div className="h-6 w-24 bg-gray-200 rounded animate-pulse mb-6" />
+                        {Array.from({ length: 2 }).map((_, i) => (
+                        <div key={i} className="flex gap-3 mb-5">
+                            <div className="w-8 h-8 rounded-full bg-gray-200 shrink-0" />
+                            <div className="flex-1 space-y-2">
+                            <div className="h-3 bg-gray-200 rounded w-24" />
+                            <div className="h-4 bg-gray-200 rounded w-full" />
+                            </div>
+                        </div>
+                        ))}
+                    </div>
+                    }>
+                    <CommentList postId={post.id} postSlug={post.slug} />
+                </Suspense>
             </div>
+
         </article>
     )
 }

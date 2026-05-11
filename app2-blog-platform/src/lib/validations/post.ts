@@ -36,3 +36,14 @@ export type ActionResult =
 // ポイント（z.infer<>）: PostFormValues = z.infer<typeof postFormSchema> とすることで、
 // Zod スキーマから TypeScript の型が自動生成されます。
 // スキーマを変えると型も自動で追従するため、「型定義」と「バリデーションルール」を別々に管理する必要がなくなります。
+
+
+// コメントのバリデーションスキーマ
+export const commentSchema = z.object({
+    content: z
+        .string()
+        .min(1, 'コメントを入力してください')
+        .max(1000, 'コメントは1,000文字以内で入力してください'),
+})
+
+export type CommentFormValues = z.infer<typeof commentSchema>
