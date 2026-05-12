@@ -53,3 +53,77 @@ export async function getPostBySlug(slug: string): Promise<PostDetail | null> {
 // ポイント
 // select で必要なフィールドだけを取得することで、不要なデータの転送を防ぎます。
 // Prisma は select の内容から戻り値の型を自動推論するため、PostSummary 型が DB のスキーマと常に一致します。
+
+
+
+// ページあたりの記事数
+export const POSTS_PER_PAGE = 9
+
+// 検索・ページネーション用の引数型
+export interface GetPostsOptions {
+  query?: string    // 検索キーワード
+  page?: number     // ページ番号（1始まり）
+  tag?: string      // タグフィルタ
+}
+
+// 総ページ数を含む戻り値の型
+export interface PaginatedPosts {
+    posts: PostSummary[]
+    totalCount: number
+    totalPages: number
+    currentPage: number
+}
+
+// ───────────────────────────────────────
+// 検索・ページネーション対応の記事取得
+// ───────────────────────────────────────
+export async function getPaginatedPosts(
+    options: GetPostsOptions = {},
+): Promise<PaginatedPosts> {
+    const { query = '', page = 1, tag } = options
+    const skip = (page - 1) * POSTS_PER_PAGE
+
+    // WHERE 条件を組み立てる
+    const where = {
+        status: 'PUBLISHED' as const,
+        // キーワード検索：タイトル OR 本文
+        ...(query
+        ? {
+            OR: [
+                { title: { contains: query, mode: 'insensitive' as const } },
+                { content: { contains: query, mode: 'insensitive' as const } },
+            ],
+            }
+        : {}),
+        // タグ絞り込み
+        ...(tag ? { tags: { some: { name: tag } } } : {}),
+    }
+
+    // 件数取得とデータ取得を並列実行
+    const [totalCount, posts] = await Promise.all([
+        prisma.post.count({ where }),
+        prisma.post.findMany({
+            where,
+            orderBy: { publishedAt: 'desc' },
+            skip,
+            take: POSTS_PER_PAGE,
+            select: {
+                id: true,
+                title: true,
+                slug: true,
+                publishedAt: true,
+                createdAt: true,
+                author: { select: { name: true, image: true } },
+                tags: { select: { name: true } },
+                _count: { select: { likes: true } },
+            },
+        }),
+    ])
+
+    return {
+        posts,
+        totalCount,
+        totalPages: Math.ceil(totalCount / POSTS_PER_PAGE),
+        currentPage: page,
+    }
+}
