@@ -5,6 +5,7 @@ import { auth } from '@/auth'
 import { prisma } from '@/lib/db'
 import { postFormSchema, type ActionResult } from '@/lib/validations/post'
 import { generateSlug } from '@/lib/utils/slug'
+import { requirePostOwner, handleAuthError } from '@/lib/auth-helpers'
 
 // ───────────────────────────────────────
 // 記事作成
@@ -134,4 +135,57 @@ export async function updatePost(postId: string, formData: FormData): Promise<Ac
     revalidatePath(`/posts/${slug}`)
 
     return { success: true, slug }
+}
+
+
+
+// ───────────────────────────────────────
+// 記事削除
+// ───────────────────────────────────────
+export async function deletePost(postId: string): Promise<ActionResult> {
+    const result = await requirePostOwner(postId)
+
+    if (!result.ok) {
+        handleAuthError(result.error)
+    }
+
+    await prisma.post.delete({ where: { id: result.post.id } })
+
+    revalidatePath('/')
+    revalidatePath('/dashboard')
+
+    return { success: true, slug: '' }
+}
+
+// ───────────────────────────────────────
+// 公開 / 下書き 切り替え
+// ───────────────────────────────────────
+export async function togglePostStatus(
+    postId: string,
+): Promise<{ success: boolean; status?: string }> {
+    const result = await requirePostOwner(postId)
+
+    if (!result.ok) {
+        handleAuthError(result.error)
+    }
+
+    const newStatus =
+    result.post.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
+
+    await prisma.post.update({
+        where: { id: postId },
+        data: {
+            status: newStatus,
+            publishedAt:
+            newStatus === 'PUBLISHED' && !result.post.publishedAt
+                ? new Date()
+                : result.post.publishedAt,
+            updatedAt: new Date(),
+        },
+    })
+
+    revalidatePath('/')
+    revalidatePath('/dashboard')
+
+    return { success: true, status: newStatus }
 }
