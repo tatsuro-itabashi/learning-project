@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useTransition } from 'react'
 import type { CommentWithAuthor } from '@/lib/comments'
 import { deleteComment } from '@/app/posts/_actions/commentActions'
@@ -30,9 +31,11 @@ export function CommentItem({ comment, currentUserId, postSlug }: CommentItemPro
         <div className={`flex gap-3 ${isPending ? 'opacity-50' : ''} transition-opacity`}>
             {/* アバター */}
             {comment.author.image ? (
-                <img
+                <Image
                     src={comment.author.image}
                     alt={comment.author.name ?? ''}
+                    width={32}
+                    height={32}
                     className="w-8 h-8 rounded-full shrink-0"
                 />
             ) : (
