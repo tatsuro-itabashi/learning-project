@@ -9,7 +9,6 @@
 | 期間 | 30日間 |
 | アプリ数 | 3本 |
 | 主要スキル | TypeScript / React / Next.js / Prisma / Supabase |
-| 転職目標 | 自社開発企業（年収600万円） |
 
 ---
 
