@@ -1,201 +1,217 @@
-# App 2: フルスタックブログプラットフォーム
+# フルスタックブログプラットフォーム
 
-## 概要
+Next.js App Router + Prisma + NextAuth.js + TypeScript で構築したフルスタックブログ。
+記事の投稿・タグ管理・いいね・コメント・検索・ページネーションに対応。
 
-Next.js App Router × Prisma × TypeScript によるフルスタック構成を実践的に習得するアプリケーション。
-Laravel でのバックエンド開発経験を活かしつつ、TypeScript による E2E 型安全性（フロント〜DB まで型が一貫する設計）を実現する。
+## デモ
 
-## 開発期間
+**本番 URL**: 未公開
 
-**Day 10〜21**（全12日）
+- テストアカウント: GitHub OAuth でログイン可能
 
----
+## 機能一覧
 
-## 要件定義
+### 記事
+- 記事の作成・編集・削除（Markdown 対応）
+- 公開 / 下書き管理
+- スラッグベースの URL
 
-### 機能要件
+### 検索・フィルタ
+- キーワード全文検索（タイトル・本文）
+- タグによる絞り込み
+- ページネーション（9件/ページ）
+- URL パラメータ連動（検索結果の共有可能）
 
-- 記事の投稿・編集・削除（MDX エディタ）
-- 認証（メール・パスワード + GitHub OAuth）
-- タグ・カテゴリ分類
-- いいね・コメント機能
-- 記事の公開 / 下書き管理
-- ページネーション・全文検索
+### ユーザー機能
+- GitHub OAuth 認証（NextAuth.js v5）
+- いいね（楽観的更新）
+- コメント
+- ダッシュボード（自分の記事管理）
 
-### 非機能要件
+### 品質
+- エラーバウンダリ（スコープ別 `error.tsx`）
+- Loading UI（スコープ別 `loading.tsx`・スケルトン）
+- カスタム 404 / 403 ページ
+- Zod による型安全なバリデーション（フロント・サーバー共通）
+- Middleware による認証保護
 
-- Server Actions によるフォーム処理（API Route を最小化）
-- Suspense + Streaming による段階的レンダリング
-- Zod によるバリデーション（フロント・サーバー共通スキーマ）
-- エラーバウンダリ（`error.tsx`）・ローディング UI（`loading.tsx`）
-
----
-
-## 技術選定
+## 技術スタック
 
 | 技術 | バージョン | 選定理由 |
 |------|-----------|----------|
 | Next.js App Router | 14 | RSC・Server Actions・Streaming をフル活用できるフルスタックフレームワーク |
-| TypeScript | 5（strict） | App1 に続き strict mode を継続。フロント〜サーバー〜DB まで型を一貫させる |
-| Prisma | 5 | スキーマから TypeScript 型を自動生成できる。Laravel の Eloquent から移行しやすい |
+| TypeScript | 5（strict） | フロント〜サーバー〜DB まで型を一貫させる |
+| Prisma | 5 | スキーマから TypeScript 型を自動生成。Laravel Eloquent からの移行もしやすい |
 | NextAuth.js | v5 | OAuth 統合とセッション管理を型安全に扱える |
-| Zod | 3 | フロント・サーバー共通のバリデーションスキーマ。`z.infer<>` で型定義の重複をなくす |
+| Zod | 3 | フロント・サーバー共通スキーマ。`z.infer<>` で型定義の重複をなくす |
 | PostgreSQL（Supabase） | - | 本番環境を想定したクラウド RDB。無料枠で運用可能 |
-| Tailwind CSS | 3 | App1 から継続。UI 実装の速度を維持する |
+| Tailwind CSS | 3 | ユーティリティファーストで UI 実装に集中できる |
 
----
+## TypeScript の工夫
 
-## TypeScript で習得する概念
+### `z.infer<>` でスキーマと型を一元管理
 
-| 概念 | 活用箇所 |
-|------|---------|
-| Prisma の自動生成型の活用 | `Post`, `User`, `Comment` の型をスキーマから自動生成して再利用 |
-| Zod スキーマから型推論（`z.infer<>`） | フォームの入力型・API リクエスト型を Zod スキーマから導出 |
-| Server / Client コンポーネントの型設計 | Props に `"use client"` 境界を意識した型設計 |
-| `never` 型・Exhaustiveness checking | switch 文での網羅性チェック（記事ステータスの処理など） |
-| 条件型（Conditional Types） | 認証状態によって異なる型を返すユーティリティ型 |
+```ts
+export const postFormSchema = z.object({
+  title: z.string().min(1, 'タイトルは必須です').max(100),
+  content: z.string().min(1, '本文は必須です'),
+  slug: z.string().regex(/^[a-z0-9-]+$/, 'スラッグは半角英数字とハイフンのみ'),
+  status: z.enum(['DRAFT', 'PUBLISHED']),
+})
 
----
-
-## 日次タスク
-
-| Day | テーマ | 成果物 |
-|-----|--------|--------|
-| 10 | Next.js 環境構築・Prisma スキーマ設計・DB マイグレーション | DB 設計完成・接続確認 |
-| 11 | NextAuth.js 設定・GitHub OAuth 認証フロー実装 | ログイン / ログアウト動作 |
-| 12 | 記事投稿・編集フォーム（Zod + Server Actions） | フォームバリデーション完成 |
-| 13 | 記事一覧・詳細ページ（RSC + Suspense） | SSR 表示確認 |
-| 14 | タグ・カテゴリ機能実装 | 分類・フィルタリング完成 |
-| 15 | いいね機能（楽観的更新） | UX を意識したリアクティブ UI |
-| 16 | コメント機能実装（ネスト構造） | コメントスレッド表示 |
-| 17 | 全文検索・ページネーション | URL パラメータ連動の検索 |
-| 18 | 公開 / 下書き管理・権限チェック（ロールベース制御） | 認可機能完成 |
-| 19 | エラーハンドリング・Loading UI（`error.tsx` / `loading.tsx`） | 堅牢な UX 完成 |
-| 20 | Supabase 本番 DB 接続・Vercel デプロイ | 本番 URL 取得 |
-| 21 | README 最終版（設計意図・技術選定の理由を詳記）・スクリーンショット撮影 | アプリ完成・公開完了 |
-
----
-
-## ディレクトリ構成（予定）
-
-```
-app2-blog-platform/
-├── app/
-│   ├── (auth)/
-│   │   ├── login/
-│   │   └── register/
-│   ├── (blog)/
-│   │   ├── posts/
-│   │   │   ├── [slug]/
-│   │   │   └── new/
-│   │   └── page.tsx
-│   ├── api/
-│   │   └── auth/
-│   ├── error.tsx
-│   ├── loading.tsx
-│   └── layout.tsx
-├── components/
-│   ├── editor/
-│   ├── post/
-│   └── ui/
-├── lib/
-│   ├── auth.ts         # NextAuth 設定
-│   ├── db.ts           # Prisma クライアント
-│   └── validations/    # Zod スキーマ
-├── prisma/
-│   ├── schema.prisma
-│   └── migrations/
-├── types/              # 追加の型定義
-├── next.config.ts
-├── tsconfig.json
-└── README.md
+// スキーマから型を導出（型定義とバリデーションを二重管理しない）
+export type PostFormValues = z.infer<typeof postFormSchema>
 ```
 
----
+### Declaration Merging で NextAuth の型を拡張
 
-## DB スキーマ設計（Prisma）
-
-```prisma
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  posts     Post[]
-  comments  Comment[]
-  likes     Like[]
-  createdAt DateTime @default(now())
-}
-
-model Post {
-  id          String    @id @default(cuid())
-  title       String
-  slug        String    @unique
-  content     String
-  status      PostStatus @default(DRAFT)
-  author      User      @relation(fields: [authorId], references: [id])
-  authorId    String
-  tags        Tag[]
-  comments    Comment[]
-  likes       Like[]
-  publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-enum PostStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
+```ts
+declare module 'next-auth' {
+  interface Session {
+    user: { id: string } & DefaultSession['user']
+  }
 }
 ```
 
----
+NextAuth のデフォルト型に `id` フィールドを追加。既存の型を壊さずに拡張できる TypeScript の Declaration Merging を活用。
 
-## 設計のポイント・振り返り
+### `never` 型で認可エラーの網羅性を保証
 
-1. **Laravel との比較**: Eloquent vs Prisma、Blade vs RSC、Laravel Sanctum vs NextAuth.js の違いを整理する
-2. **E2E 型安全性の設計**: Zod スキーマ → `z.infer<>` → Prisma 型 → API レスポンス型まで `any` を使わない設計
-3. **Server Actions の選択理由**: なぜ API Route ではなく Server Actions を使ったか（キャッシュ・再検証の観点）
-4. **次に追加したい機能**: 全文検索エンジン（Algolia or pg_search）・RSS フィード・OGP 画像自動生成
+```ts
+export type AuthError =
+  | { type: 'UNAUTHENTICATED' }
+  | { type: 'FORBIDDEN' }
+  | { type: 'NOT_FOUND' }
 
+function handleAuthError(error: AuthError): never {
+  switch (error.type) {
+    case 'UNAUTHENTICATED': redirect('/login')
+    case 'FORBIDDEN':       redirect('/403')
+    case 'NOT_FOUND':       redirect('/404')
+    default:
+      // AuthError に新しい種別を追加したとき、
+      // ここに到達するとコンパイルエラーになる
+      const _: never = error
+      redirect('/500')
+  }
+}
+```
 
+### Prisma の `select` で型安全な部分取得
 
+```ts
+// select した内容から戻り値の型が自動推論される
+export type PostSummary = Awaited<ReturnType<typeof getPublishedPosts>>[number]
+```
 
+`any` を使わずに DB の取得結果の型を保証。
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+### `useOptimistic` で楽観的更新
 
-## Getting Started
+```tsx
+const [optimisticState, addOptimistic] = useOptimistic<LikeState, 'toggle'>(
+  { liked: initialLiked, count: initialCount },
+  (current, action) => ({
+    liked: !current.liked,
+    count: current.liked ? current.count - 1 : current.count + 1,
+  }),
+)
+```
 
-First, run the development server:
+Server Action の完了を待たずにUIを即時更新。失敗時は自動ロールバック。
+
+## 設計のポイント
+
+### Server Components と Client Components の使い分け
+
+```
+RSC（Server Component）     → データ取得・認証チェック・静的 UI
+Client Component ('use client') → インタラクション・フォーム・楽観的更新
+```
+
+`Header`・`PostList`・各ページは RSC で実装し、`LikeButton`・`PostForm`・`SearchBar` のみ Client Component にすることで、JavaScript のバンドルサイズを最小化。
+
+### URL 駆動の検索設計
+
+```
+/posts?q=typescript&page=2
+```
+
+検索条件を URL パラメータで管理することで：
+- ブラウザの「戻る」ボタンで検索結果に戻れる
+- URL を共有するだけで同じ検索結果を再現できる
+- サーバーサイドで直接 DB クエリに渡せる（クライアント状態不要）
+
+### エラーバウンダリのスコープ設計
+
+```
+app/error.tsx          ← 全体の最終砦
+app/posts/[slug]/
+  error.tsx            ← 記事詳細のエラーのみ補足
+  not-found.tsx        ← 記事 not found のカスタム UI
+app/dashboard/
+  error.tsx            ← ダッシュボードのエラーのみ補足
+```
+
+スコープを絞ることで、一部のエラーがアプリ全体をクラッシュさせない設計。
+
+## ローカル環境のセットアップ
 
 ```bash
+npm install
+
+# 環境変数を設定
+cp .env.example .env.local
+# .env.local に DB 接続文字列・Auth 設定を記入
+
+# DB マイグレーション
+npx prisma migrate dev
+
+# 開発サーバー起動
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**必要な環境変数**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+DATABASE_URL=
+DIRECT_URL=
+AUTH_SECRET=
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## DB スキーマ
 
-## Learn More
+```
+User ──< Post ──< Comment
+              ──< Like
+              >── Tag（多対多）
+```
 
-To learn more about Next.js, take a look at the following resources:
+## ディレクトリ構成
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── (auth)/             # 認証関連ページ
+│   ├── posts/              # 記事ページ・Server Actions
+│   ├── tags/               # タグページ
+│   ├── dashboard/          # マイ記事管理
+│   ├── error.tsx           # グローバルエラーバウンダリ
+│   └── not-found.tsx       # グローバル 404
+├── components/
+│   ├── layout/             # Header など
+│   ├── post/               # 記事関連コンポーネント
+│   ├── search/             # 検索バー
+│   └── ui/                 # 汎用 UI（TagBadge など）
+├── lib/
+│   ├── posts.ts            # 記事の DB アクセス関数
+│   ├── tags.ts             # タグの DB アクセス関数
+│   ├── auth-helpers.ts     # 認証・認可ヘルパー
+│   ├── db.ts               # Prisma クライアント
+│   └── validations/        # Zod スキーマ
+├── types/
+│   └── next-auth.d.ts      # NextAuth 型拡張
+└── auth.ts                 # NextAuth 設定
+```
