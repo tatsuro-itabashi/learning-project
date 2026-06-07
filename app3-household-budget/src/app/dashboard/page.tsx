@@ -18,6 +18,7 @@ import { TransactionItem } from '@/components/transaction/TransactionItem'
 import { getBudgetsByMonth, calcBudgetProgress, type Budget } from '@/lib/budgets'
 import { BudgetList } from '@/components/budget/BudgetList'
 import { BudgetForm } from '@/components/budget/BudgetForm'
+import { useRealtimeTransactions } from '@/hooks/useRealtimeTransactions'
 
 
 export default function DashboardPage() {
@@ -97,6 +98,18 @@ export default function DashboardPage() {
                 >
                 📊 グラフ
                 </Link>
+                <div className="flex items-center gap-1.5 text-xs text-gray-400 mr-3">
+                    <span
+                        className={`w-2 h-2 rounded-full ${
+                            realtimeStatus === 'connected'
+                                ? 'bg-green-500'
+                                : realtimeStatus === 'connecting'
+                                    ? 'bg-amber-400 animate-pulse'
+                                    : 'bg-gray-300'
+                        }`}
+                    />
+                    {realtimeStatus === 'connected' ? 'リアルタイム同期中' : realtimeStatus === 'connecting' ? '接続中...' : '切断'}
+                </div>
                 <button
                     onClick={() => createClient().auth.signOut().then(() => router.push('/login'))}
                     className="text-sm text-gray-500 hover:text-gray-700"
