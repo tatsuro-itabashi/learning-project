@@ -15,6 +15,10 @@ import {
 import type { Category } from '@/types'
 import { TransactionForm } from '@/components/transaction/TransactionForm'
 import { TransactionItem } from '@/components/transaction/TransactionItem'
+import { getBudgetsByMonth, calcBudgetProgress, type Budget } from '@/lib/budgets'
+import { BudgetList } from '@/components/budget/BudgetList'
+import { BudgetForm } from '@/components/budget/BudgetForm'
+
 
 export default function DashboardPage() {
     const router = useRouter()
@@ -28,16 +32,21 @@ export default function DashboardPage() {
     const [showForm, setShowForm]         = useState(false)
     const [editTarget, setEditTarget]     = useState<TransactionWithCategory | undefined>()
 
+    const [budgets, setBudgets] = useState<Budget[]>([])
+    const [showBudgetForm, setShowBudgetForm] = useState(false)
+
     // データ読み込み
     const loadData = useCallback(async () => {
         setIsLoading(true)
         try {
-            const [txs, cats] = await Promise.all([
+            const [txs, cats, buds] = await Promise.all([
                 getTransactionsByMonth(year, month),
                 getCategories(),
+                getBudgetsByMonth(year, month),
             ])
             setTransactions(txs)
             setCategories(cats)
+            setBudgets(buds)
         } finally {
             setIsLoading(false)
         }
@@ -117,7 +126,21 @@ export default function DashboardPage() {
                         </div>
                     ))}
                 </div>
+                {/* 予算 */}
+                <BudgetList
+                    progresses={calcBudgetProgress(budgets, transactions)}
+                    onManage={() => setShowBudgetForm(true)}
+                />
 
+                <BudgetForm
+                    isOpen={showBudgetForm}
+                    onClose={() => setShowBudgetForm(false)}
+                    categories={categories.filter((c) => c.type === 'expense')}
+                    budgets={budgets}
+                    year={year}
+                    month={month}
+                    onSuccess={loadData}
+                />
                 {/* 収支追加ボタン */}
                 {!showForm && (
                 <button
