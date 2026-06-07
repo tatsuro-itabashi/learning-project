@@ -19,6 +19,7 @@ import { getBudgetsByMonth, calcBudgetProgress, type Budget } from '@/lib/budget
 import { BudgetList } from '@/components/budget/BudgetList'
 import { BudgetForm } from '@/components/budget/BudgetForm'
 import { useRealtimeTransactions } from '@/hooks/useRealtimeTransactions'
+import { transactionsToCsv, downloadCsv, buildCsvFilename } from '@/lib/csv'
 
 
 export default function DashboardPage() {
@@ -53,6 +54,12 @@ export default function DashboardPage() {
         }
     }, [year, month])
 
+    const { status: realtimeStatus } = useRealtimeTransactions({
+        onChange: loadData,
+        year,
+        month,
+    })
+
     // 初期化
     useEffect(() => {
         const supabase = createClient()
@@ -72,6 +79,12 @@ export default function DashboardPage() {
         setShowForm(false)
         setEditTarget(undefined)
         await loadData()
+    }
+
+    const handleExportCsv = () => {
+        const csv = transactionsToCsv(transactions)
+        const filename = buildCsvFilename(year, month)
+        downloadCsv(csv, filename)
     }
 
     const { income, expense, balance } = calcSummary(transactions)
@@ -125,6 +138,15 @@ export default function DashboardPage() {
                     <span className="font-bold text-gray-900">{year}年{month}月</span>
                     <button onClick={goNext} className="p-2 hover:bg-gray-100 rounded-lg">→</button>
                 </div>
+
+                {/* CSVエクスポート */}
+                <button
+                    onClick={handleExportCsv}
+                    disabled={transactions.length === 0}
+                    className="self-end text-xs text-gray-500 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                    📄 CSVをダウンロード
+                </button>
 
                 {/* サマリーカード */}
                 <div className="grid grid-cols-3 gap-3">
